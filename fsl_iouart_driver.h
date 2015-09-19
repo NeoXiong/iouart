@@ -1,66 +1,61 @@
-/*
- * Copyright (c) 2015, Freescale Semiconductor, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * o Redistributions of source code must retain the above copyright notice, this list
- *   of conditions and the following disclaimer.
- *
- * o Redistributions in binary form must reproduce the above copyright notice, this
- *   list of conditions and the following disclaimer in the documentation and/or
- *   other materials provided with the distribution.
- *
- * o Neither the name of Freescale Semiconductor, Inc. nor the names of its
- *   contributors may be used to endorse or promote products derived from this
- *   software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- * [File Name]     main.h
- * [Platform]      FRDM-KL03Z
- * [Project]       IOUART_example
- * [Version]       1.00
- * [Author]        B44513
- * [Date]          09/18/2015
- * [Language]      'C'
- * [History]       1.00 - Original Release
- *
- */
+#ifndef __FSL_IOUART_DRIVER_H__
+#define __FSL_IOUART_DRIVER_H__
 
-//-----------------------------------------------------------------------
-// KSDK Includes
-//-----------------------------------------------------------------------
-#include "board.h"
-#include "fsl_debug_console.h"
-#include "fsl_clock_manager.h"
-#include "fsl_interrupt_manager.h"
-#include "fsl_power_manager.h"
-#include "fsl_adc16_driver.h"
-#include "fsl_cmp_driver.h"
-#include "fsl_cop_driver.h"
-#include "fsl_gpio_driver.h"
-#include "fsl_i2c_master_driver.h"
-#include "fsl_i2c_slave_driver.h"
-#include "fsl_lptmr_driver.h"
-#include "fsl_lpuart_driver.h"
-#include "fsl_rtc_driver.h"
-#include "fsl_spi_master_driver.h"
-#include "fsl_spi_slave_driver.h"
-#include "fsl_tpm_driver.h"
-#include "fsl_vref_driver.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include "fsl_os_abstraction.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// EOF
-////////////////////////////////////////////////////////////////////////////////
+typedef enum _lpuart_status
+{
+    kStatus_IOUART_Success                  = 0x00U,
+    kStatus_IOUART_Fail                     = 0x01U,
+    kStatus_IOUART_RxStandbyModeError       = 0x03U,
+    kStatus_IOUART_ClearStatusFlagError     = 0x04U,
+    kStatus_IOUART_TxNotDisabled            = 0x05U,
+    kStatus_IOUART_RxNotDisabled            = 0x06U,
+    kStatus_IOUART_TxBusy                   = 0x07U,
+    kStatus_IOUART_RxBusy                   = 0x08U,
+    kStatus_IOUART_NoTransmitInProgress     = 0x09U,
+    kStatus_IOUART_NoReceiveInProgress      = 0x0AU,
+    kStatus_IOUART_Timeout                  = 0x0BU,
+    kStatus_IOUART_Initialized              = 0x0CU,
+    kStatus_IOUART_NoDataToDeal             = 0x0DU,
+    kStatus_IOUART_RxOverRun                = 0x0EU
+} iouart_status_t;
+
+typedef struct _iouartState {
+    const uint8_t * txBuff;          /*!< The buffer of data being sent.*/
+	uint8_t * rxBuff;                /*!< The buffer of received data.*/
+    volatile size_t txSize;          /*!< The remaining number of bytes to be transmitted. */
+    volatile size_t rxSize;          /*!< The remaining number of bytes to be received. */
+    volatile bool isTxBusy;          /*!< True if there is an active transmit.*/
+    volatile bool isRxBusy;          /*!< True if there is an active receive.*/
+    volatile bool isTxBlocking;      /*!< True if transmit is blocking transaction. */
+    volatile bool isRxBlocking;      /*!< True if receive is blocking transaction. */
+    semaphore_t txIrqSync;           /*!< Used to wait for ISR to complete its Tx business.*/
+    semaphore_t rxIrqSync;           /*!< Used to wait for ISR to complete its Rx business.*/
+    //lpuart_rx_callback_t rxCallback; /*!< Callback to invoke after receiving byte.*/
+    void * rxCallbackParam;          /*!< Receive callback parameter pointer.*/
+    //lpuart_tx_callback_t txCallback; /*!< Callback to invoke after transmitting byte.*/
+    void * txCallbackParam;          /*!< Transmit callback parameter pointer.*/
+} iouart_state_t;
+
+typedef enum _iouart_baudrate{
+    kIoUartBaudRate4800,
+    kIoUartBaudRate9600,
+    kIoUartBaudRate19200,
+    kIoUartBaudRate38400
+} iouart_baudrate_t;
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+iouart_status_t IOUART_DRV_Init(uint32_t instance, iouart_state_t *iouartStatePtr, iouart_baudrate_t baudRate);
+iouart_status_t IOUART_DRV_SendData(uint32_t instance, const uint8_t *txBuff, uint32_t txSize);
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* __FSL_IOUART_DRIVER_H__ */
