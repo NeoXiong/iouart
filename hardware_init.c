@@ -51,7 +51,6 @@
 //-----------------------------------------------------------------------
 void hardware_init(void)
 {
-
     /* enable clock for PORTs */
     CLOCK_SYS_EnablePortClock(PORTA_IDX);
     CLOCK_SYS_EnablePortClock(PORTB_IDX);
