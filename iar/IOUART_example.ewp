@@ -1965,6 +1965,9 @@
       <name>$PROJ_DIR$\..\fsl_iouart_driver.h</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\fsl_iouart_irq.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\main.c</name>
     </file>
   </group>

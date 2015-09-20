@@ -37,10 +37,19 @@ typedef enum _lpuart_status
 } iouart_status_t;
 
 typedef struct _iouartState {
-    const uint8_t * txBuff;          /*!< The buffer of data being sent.*/
+    const uint8_t *txBuff;          /*!< The buffer of data being sent.*/
     volatile size_t txSize;          /*!< The remaining number of bytes to be transmitted. */
     volatile bool isTxBusy;          /*!< True if there is an active transmit.*/
-    iouart_rx_callback_t rxCb;
+    iouart_rx_callback_t cb;
+  
+    uint8_t txStateMachine;
+    uint8_t rxStateMachine;
+    uint8_t rxBuff;
+    
+    GPIO_Type *gpioBaseTx;
+    GPIO_Type *gpioBaseRx;
+    uint32_t   pinNumberTx;
+    uint32_t   pinNumberRx;
 } iouart_state_t;
 
 #if defined(__cplusplus)
@@ -49,6 +58,11 @@ extern "C" {
 
 iouart_status_t IOUART_DRV_Init(iouart_state_t *iouartStatePtr, const iopuart_user_config_t *iouartUserConfig, iouart_rx_callback_t cb);
 iouart_status_t IOUART_DRV_SendData(const uint8_t *txBuff, uint32_t txSize);
+
+
+void IOUART_DRV_EdgeDetectIRQHandler(void);
+void IOUART_DRV_TxIRQHandler(void);
+void IOUART_DRV_RxIRQHandler(void);
 
 #if defined(__cplusplus)
 }
