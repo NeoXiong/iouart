@@ -1,4 +1,10 @@
-/* neo.xiong@freescale.com */
+/* 
+    main.c 
+
+    neo.xiong@freescale.com
+
+    IOUART Driver example code
+*/
 
 #include "board.h"
 #include "fsl_iouart_driver.h"

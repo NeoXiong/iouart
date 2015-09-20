@@ -1,49 +1,25 @@
-#include "fsl_iouart_driver.h"
+/* 
+    fsl_iouart_irq.c 
 
-#if (PORT_INSTANCE_COUNT > 0)
+    neo.xiong@freescale.com
 
-void PORTA_IRQHandler(void)
-{
-    IOUART_DRV_EdgeDetectIRQHandler();
-}
+    This file override weak entry label defined in .s startup code file, 
+    Generally, there're not part of IOUART_Driver because other code may also
+    use the shared interrupt entry, e.g. other gpio interrupts on the same
+    port. But for TPMx interrupt, it's less likely they can be used for other 
+    function as we defined specific period and controlled when it run and stop. 
+*/
 
-#endif
-
-#if (PORT_INSTANCE_COUNT > 1)
+extern void IOUART_DRV_EdgeDetectIRQHandler(void);
+extern void IOUART_DRV_TxIRQHandler(void);
+extern void IOUART_DRV_RxIRQHandler(void);
 
 void PORTB_IRQHandler(void)
 {
+    /* add your other GPIO interrupt code here */
+    
     IOUART_DRV_EdgeDetectIRQHandler();
 }
-
-#endif
-
-#if (PORT_INSTANCE_COUNT > 2)
-
-void PORTC_IRQHandler(void)
-{
-    IOUART_DRV_EdgeDetectIRQHandler();
-}
-
-#endif
-
-#if (PORT_INSTANCE_COUNT > 3)
-
-void PORTD_IRQHandler(void)
-{
-    IOUART_DRV_EdgeDetectIRQHandler();
-}
-
-#endif
-
-#if (PORT_INSTANCE_COUNT > 4)
-
-void PORTE_IRQHandler(void)
-{
-    IOUART_DRV_EdgeDetectIRQHandler();
-}
-
-#endif
 
 void TPM0_IRQHandler(void)
 {
@@ -54,8 +30,3 @@ void TPM1_IRQHandler(void)
 {
     IOUART_DRV_RxIRQHandler();
 }
-
-/*******************************************************************************
- * EOF
- ******************************************************************************/
-

@@ -1,3 +1,11 @@
+/* 
+    fsl_iouart_driver.h 
+
+    neo.xiong@freescale.com
+
+    IOUART driver API and Data structure declartion file. 
+*/
+
 #ifndef __FSL_IOUART_DRIVER_H__
 #define __FSL_IOUART_DRIVER_H__
 
@@ -46,6 +54,8 @@ typedef struct _iouartState {
     uint8_t rxStateMachine;
     uint8_t rxBuff;
     
+    PORT_Type *portBaseTx;
+    PORT_Type *portBaseRx;
     GPIO_Type *gpioBaseTx;
     GPIO_Type *gpioBaseRx;
     uint32_t   pinNumberTx;

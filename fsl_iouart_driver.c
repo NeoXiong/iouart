@@ -1,3 +1,12 @@
+/* 
+    fsl_iouart_driver.c
+
+    neo.xiong@freescale.com
+
+    This file implement IOUART driver
+*/
+
+
 #include <assert.h>
 #include <string.h>
 
@@ -24,13 +33,11 @@ static void _IOUART_DRV_StopTmr(TPM_Type *tpm)
     TPM_HAL_ClearCounter(tpm);
 }
 
-
 iouart_status_t IOUART_DRV_Init(iouart_state_t *iouartStatePtr, const iopuart_user_config_t *iouartUserConfig, iouart_rx_callback_t cb)
 {
     assert(iouartStatePtr && iouartUserConfig && cb);
 
     uint32_t portNumberTx, portNumberRx;
-    PORT_Type *portBaseTx, *portBaseRx;
     
     /* Exit if current instance is already initialized. */
     if (g_iouartStatePtr != NULL)
@@ -46,9 +53,9 @@ iouart_status_t IOUART_DRV_Init(iouart_state_t *iouartStatePtr, const iopuart_us
     
     portNumberTx = GPIO_EXTRACT_PORT(iouartUserConfig->txPinName);
     portNumberRx = GPIO_EXTRACT_PORT(iouartUserConfig->rxPinName);
-    portBaseTx = g_portBase[portNumberTx];
-    portBaseRx = g_portBase[portNumberRx];
     
+    iouartStatePtr->portBaseTx = g_portBase[portNumberTx];
+    iouartStatePtr->portBaseRx = g_portBase[portNumberRx];
     iouartStatePtr->gpioBaseTx = g_gpioBase[portNumberTx];
     iouartStatePtr->gpioBaseRx = g_gpioBase[portNumberRx];
     iouartStatePtr->pinNumberTx = GPIO_EXTRACT_PIN(iouartUserConfig->txPinName);
@@ -57,12 +64,12 @@ iouart_status_t IOUART_DRV_Init(iouart_state_t *iouartStatePtr, const iopuart_us
     CLOCK_SYS_EnablePortClock(portNumberTx);
     CLOCK_SYS_EnablePortClock(portNumberRx);
     
-    PORT_HAL_SetMuxMode(portBaseTx, iouartStatePtr->pinNumberTx, kPortMuxAsGpio);
-    PORT_HAL_SetMuxMode(portBaseRx, iouartStatePtr->pinNumberRx, kPortMuxAsGpio);
+    PORT_HAL_SetMuxMode(iouartStatePtr->portBaseTx, iouartStatePtr->pinNumberTx, kPortMuxAsGpio);
+    PORT_HAL_SetMuxMode(iouartStatePtr->portBaseRx, iouartStatePtr->pinNumberRx, kPortMuxAsGpio);
     
     /* config rx falling edge interrupt */
-    PORT_HAL_ClearPinIntFlag(portBaseRx, iouartStatePtr->pinNumberRx);
-    PORT_HAL_SetPinIntMode(portBaseRx, iouartStatePtr->pinNumberRx, kPortIntFallingEdge);
+    PORT_HAL_ClearPinIntFlag(iouartStatePtr->portBaseRx, iouartStatePtr->pinNumberRx);
+    PORT_HAL_SetPinIntMode(iouartStatePtr->portBaseRx, iouartStatePtr->pinNumberRx, kPortIntFallingEdge);
 
     GPIO_HAL_SetPinDir(iouartStatePtr->gpioBaseTx, iouartStatePtr->pinNumberTx, kGpioDigitalOutput);
     GPIO_HAL_SetPinDir(iouartStatePtr->gpioBaseRx, iouartStatePtr->pinNumberRx, kGpioDigitalInput);
@@ -99,9 +106,6 @@ iouart_status_t IOUART_DRV_Init(iouart_state_t *iouartStatePtr, const iopuart_us
                         
     TPM_HAL_SetMod(TPM0, CLOCK_SYS_GetTpmFreq(TPM0_IDX) / targetFreq - 1);
     TPM_HAL_SetMod(TPM1, CLOCK_SYS_GetTpmFreq(TPM1_IDX) / targetFreq - 1);
-    
-    //TPM_HAL_SetClockMode(TPM0, kTpmClockSourceModuleClk);
-   // TPM_HAL_SetClockMode(TPM1, kTpmClockSourceModuleClk);
 
     NVIC_ClearPendingIRQ(g_tpmIrqId[TPM0_IDX]);
     INT_SYS_EnableIRQ(g_tpmIrqId[TPM0_IDX]);
@@ -145,11 +149,16 @@ iouart_status_t IOUART_DRV_SendData(const uint8_t *txBuff, uint32_t txSize)
 
 void IOUART_DRV_EdgeDetectIRQHandler(void)
 {
-    
-    
-    _IOUART_DRV_StartTmr(TPM1);
+    if (PORT_HAL_IsPinIntPending(g_iouartStatePtr->portBaseRx, g_iouartStatePtr->pinNumberRx))
+    {
+       PORT_HAL_ClearPinIntFlag(g_iouartStatePtr->portBaseRx, g_iouartStatePtr->pinNumberRx);
+        
+       _IOUART_DRV_StartTmr(TPM1);
+       
+       /* Disable falling edge interrupt */
+       PORT_HAL_SetPinIntMode(g_iouartStatePtr->portBaseRx, g_iouartStatePtr->pinNumberRx, kPortIntDisabled);
+    }
 }
-
 
 void IOUART_DRV_TxIRQHandler(void)
 {
@@ -381,9 +390,11 @@ void IOUART_DRV_RxIRQHandler(void)
             
             // as quick as possible, other wise will affect the following receive progress
             (*g_iouartStatePtr->cb)(g_iouartStatePtr->rxBuff);
+            PORT_HAL_SetPinIntMode(g_iouartStatePtr->portBaseRx, g_iouartStatePtr->pinNumberRx, kPortIntFallingEdge);
+            
+            _IOUART_DRV_StopTmr(TPM1);
             
             g_iouartStatePtr->rxStateMachine = 0;
-            _IOUART_DRV_StopTmr(TPM1);
             break;
 
         default:
