@@ -13,6 +13,7 @@
 static iouart_state_t iouartStatePtr;
 
 const uint8_t WelcomString[] = "\n\r++++++++++++++++ Welcome to IOUART Example +++++++++++++++++\n\r";
+uint8_t aaa;
 
 void OnDataReceived(uint8_t d)
 {
