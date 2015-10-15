@@ -49,6 +49,8 @@
 //-----------------------------------------------------------------------
 // Hardware Initialization
 //-----------------------------------------------------------------------
+void hardware_init(void);
+
 void hardware_init(void)
 {
     /* enable clock for PORTs */
