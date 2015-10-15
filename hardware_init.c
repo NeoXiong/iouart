@@ -43,6 +43,7 @@
 // KSDK Includes
 //-----------------------------------------------------------------------
 #include "board.h"
+#include "board.h"
 #include "pin_mux.h"
 #include "fsl_clock_manager.h"
 #include "fsl_debug_console.h"
