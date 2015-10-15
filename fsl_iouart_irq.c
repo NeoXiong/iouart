@@ -13,6 +13,7 @@
 extern void IOUART_DRV_EdgeDetectIRQHandler(void);
 extern void IOUART_DRV_TxIRQHandler(void);
 extern void IOUART_DRV_RxIRQHandler(void);
+1
 
 void PORTB_IRQHandler(void)
 {
