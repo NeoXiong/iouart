@@ -12,7 +12,7 @@
 
 static iouart_state_t iouartStatePtr;
 
-const uint8_t WelcomString[] = "\n\r++++++++++++++++ Welcome to UART Example +++++++++++++++++\n\r";
+const uint8_t WelcomString[] = "\n\r++++++++++++++++ Welcome to IOUART get started Example +++++++++++++++++\n\r";
 uint8_t aaa;
 uint8_t bbb;
 
