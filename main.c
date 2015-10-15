@@ -33,7 +33,7 @@ int main(void)
 
     IOUART_DRV_Init(&iouartStatePtr, &iouartConfig, &OnDataReceived);
 
-    IOUART_DRV_SendData(WelcomString, sizeof(WelcomString));
+    IOUART_DRV_SendData(WelcomStr, sizeof(WelcomStr));
     
     while (1);
 }
