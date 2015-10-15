@@ -51,10 +51,10 @@
 //-----------------------------------------------------------------------
 void hardware_init(void);
 
-void hardware_init(void)
+void hardware_init(uint8_t n)
 {
     /* enable clock for PORTs */
-    CLOCK_SYS_EnablePortClock(PORTA_IDX);
+    CLOCK_SYS_EnablePortClock(PORTC_IDX);
     CLOCK_SYS_EnablePortClock(PORTB_IDX);
 
     /* Init board clock */
